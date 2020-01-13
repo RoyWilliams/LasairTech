@@ -1,6 +1,6 @@
+import mysql.connector
 import settings
 import random
-import mysql.connector
 
 def make_db_connection():
     config = {
