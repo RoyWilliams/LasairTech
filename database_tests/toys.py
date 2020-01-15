@@ -2,25 +2,27 @@ import mysql.connector
 import settings
 import random
 
-def make_db_connection():
+def make_db_connection(remote=True):
     config = {
         'user'    : settings.DB_USER_WRITE,
         'password': settings.DB_PASS_WRITE,
-        'host'    : settings.DB_HOST,
+        'host'    : settings.DB_HOST_REMOTE,
         'database': 'ztf'
     }
+    if not remote:
+        config['host'] = settings.DB_HOST_LOCAL
     msl = mysql.connector.connect(**config)
     return msl
 
-test_table = """
-create table test_table(
-    id         int NOT NULL AUTO_INCREMENT,
-    value      double,
-    PRIMARY KEY (id)
-)
-"""
 
 def start_again(msl):
+    test_table = """
+    create table test_table(
+    id         int,
+    value      double,
+    PRIMARY KEY (id)
+    )
+"""
 # This function drops the two tables and recreates them
     cursor = msl.cursor(buffered=True, dictionary=True)
     query = 'DROP TABLE IF EXISTS test_table'
@@ -36,10 +38,11 @@ def print_numbers(msl):
 
     print('  %d values' % ncand)
 
-def insert_record(msl, n, debug=False):
+def insert_record(msl, maxid, n, debug=False):
     for i in range(n):
+        id = random.randrange(0, maxid)
         value = random.random()
-        query = 'INSERT INTO test_table (value) VALUES (%f)' % value
+        query = 'REPLACE INTO test_table (id, value) VALUES (%d, %f)' % (id, value)
         if debug: print(query)
         cursor = msl.cursor(buffered=True, dictionary=True)
         cursor.execute(query)
@@ -53,3 +56,13 @@ def select_range(msl, min, max, debug=False):
     cursor.execute(query)
     msl.commit()
 #    print('Found %d values' % cursor.rowcount)
+
+def write_file(msl, filename, debug=False):
+    f = open(filename, 'w')
+    query = 'SELECT id,value from test_table'
+    if debug: print(query)
+    cursor  = msl.cursor(buffered=True, dictionary=True)
+    cursor.execute(query)
+    for row in cursor:
+        f.write('%d\t%f\n' % (row['id'], row['value']))
+    f.close()
