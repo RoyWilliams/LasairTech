@@ -1,0 +1,25 @@
+---
+- hosts: lt_nodes:lt_archive
+
+  tasks:
+          - name: 'install mysql'
+            command:
+                    'apt install mysql-server -y'
+            become: yes
+
+          - name: 'copy setup file'
+            copy:
+                    src:  'mysql_setup.sql'
+                    dest: '/home/ubuntu/mysql_setup.sql'
+            become: yes
+            #- name: 'setup mysql'
+            #command:
+            #'mysql < mysql_setup.sql'
+            #become: yes
+          - name: 'fetch code from github'
+            command:
+                    'git clone https://github.com/RoyWilliams/LasairTech.git'
+          - name: 'copy settings file'
+            copy:
+                    src:  'settings.py'
+                    dest: '/home/ubuntu/LasairTech/settings.py'
