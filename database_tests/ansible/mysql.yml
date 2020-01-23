@@ -3,23 +3,31 @@
 
   tasks:
           - name: 'install mysql'
-            command:
-                    'apt install mysql-server -y'
+            command: 'apt install mysql-server -y'
             become: yes
 
-          - name: 'copy setup file'
-            copy:
-                    src:  'mysql_setup.sql'
-                    dest: '/home/ubuntu/mysql_setup.sql'
-            become: yes
-            #- name: 'setup mysql'
-            #command:
-            #'mysql < mysql_setup.sql'
-            #become: yes
           - name: 'fetch code from github'
-            command:
-                    'git clone https://github.com/RoyWilliams/LasairTech.git'
-          - name: 'copy settings file'
-            copy:
-                    src:  'settings.py'
-                    dest: '/home/ubuntu/LasairTech/settings.py'
+            #            command: 'cd LasairTech'
+            command: 'date'
+            register: result
+            ignore_errors: True
+
+          - command: 'git clone https://github.com/RoyWilliams/LasairTech.git'
+            when: result is failed
+
+          - command: 'git pull'
+            args:
+                    chdir: 'LasairTech'
+            when: result is succeeded
+                    
+          - name: 'allow remote connections'
+            command: 'sh allow_remote.sh'
+            args:
+                    chdir: 'LasairTech/database_tests/ansible/'
+            become: yes
+
+          - name: 'setup mysql'
+            command: 'mysql < mysql_setup.sql'
+            become: yes
+            args:
+                    chdir: 'LasairTech/database_tests/ansible/'
