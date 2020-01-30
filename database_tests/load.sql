@@ -1,0 +1,2 @@
+USE ztf;
+LOAD DATA LOCAL INFILE 'out.txt' REPLACE INTO TABLE test_table
