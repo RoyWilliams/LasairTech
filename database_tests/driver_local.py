@@ -17,4 +17,4 @@ start = time.time()
 toys.insert_record(msl, maxid, number_insert, debug=False)
 print("%d inserts made in %.2f seconds" % (number_insert, time.time()-start))
 
-toys.write_file(msl, 'out.txt', debug=False)
+toys.write_file(msl, '~/scratch/out.txt', debug=False)
