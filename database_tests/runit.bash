@@ -1,6 +1,5 @@
 dir='LasairTech/database_tests'
 archive='192.168.140.23'
-echo $dir
 python3 start_again.py
 python3 driver_local.py 1000000 10000
 time scp out.txt $archive:scratch
