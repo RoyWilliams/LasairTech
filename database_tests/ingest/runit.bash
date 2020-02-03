@@ -7,7 +7,12 @@ python3 ingestStreamThreaded.py \
 --host 192.41.108.22 \
 --topic ztf_20200131_programid1
 
-mysqldbexport --server=ztf:123password@localhost:3306 --format=csv ztf --export=data > ~/scratch/out.txt
+sudo rm /var/lib/mysql-files/out.txt
+
+mysql --user=ztf --password=123password < /home/ubuntu/LasairTech/database_tests/ingest/output_csv.sql
+
+sudo mv /var/lib/mysql-files/out.txt /home/ubuntu/scratch
 
 time scp /home/ubuntu/scratch/out.txt 192.168.140.23:scratch
+
 time ssh 192.168.140.23 "mysql --user=ztf --password=123password < LasairTech/database_tests/ingest/load.sql"
