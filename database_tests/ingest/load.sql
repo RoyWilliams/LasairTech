@@ -1,3 +1,0 @@
-USE ztf;
-LOAD DATA LOCAL INFILE '/home/ubuntu/scratch/out.txt' REPLACE INTO TABLE candidates FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n';
-
