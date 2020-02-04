@@ -1,18 +1,18 @@
 python3 refresh.py
+sudo rm /var/lib/mysql-files/out.txt
 
 python3 ingestStreamThreaded.py \
---maxalert 10000 \
+--maxalert 1000 \
 --nthread 1 \
 --group LASAIR-DEV2 \
 --host 192.41.108.22 \
---topic ztf_20200131_programid1
+--topic ztf_20200204_programid1
 
-sudo rm /var/lib/mysql-files/out.txt
-
-mysql --user=ztf --password=123password < /home/ubuntu/LasairTech/database_tests/ingest/output_csv.sql
+mysql --user=ztf --database=ztf --password=123password < output_csv.sql
 
 sudo mv /var/lib/mysql-files/out.txt /home/ubuntu/scratch
 
-time scp /home/ubuntu/scratch/out.txt 192.168.140.23:scratch
+out=`hostname`.txt
+time scp /home/ubuntu/scratch/out.txt 192.168.140.23:scratch/$out
 
-time ssh 192.168.140.23 "mysql --user=ztf --password=123password < LasairTech/database_tests/ingest/load.sql"
+time ssh 192.168.140.23 "python3 /home/ubuntu/LasairTech/database_tests/ingest/in.py $out"

@@ -10,6 +10,10 @@
             command:
                     'pip3 install confluent-kafka'
             become: yes
+          - name: 'install fastavro'
+            command:
+                    'pip3 install fastavro'
+            become: yes
           - name: 'install mysql connector'
             command:
                     'pip3 install mysql-connector-python'
