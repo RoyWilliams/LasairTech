@@ -1,5 +1,4 @@
 python3 refresh.py
-sudo rm /var/lib/mysql-files/out.txt
 
 python3 ingestStreamThreaded.py \
 --maxalert 1000 \
