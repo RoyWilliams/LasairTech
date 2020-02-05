@@ -6,15 +6,16 @@
             command: 'apt install mysql-server -y'
             become: yes
 
+          - name: 'permissions on mysql-files'
+            command: 'chmod 777 /var/lib/mysql-files'
+            become: yes
+
           - name: 'fetch code from github'
-            #            command: 'cd LasairTech'
-            command: 'date'
+            command: 'cd LasairTech'
             register: result
             ignore_errors: True
-
           - command: 'git clone https://github.com/RoyWilliams/LasairTech.git'
             when: result is failed
-
           - command: 'git pull'
             args:
                     chdir: 'LasairTech'
