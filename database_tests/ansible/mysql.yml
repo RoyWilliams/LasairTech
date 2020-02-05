@@ -1,30 +1,37 @@
 ---
 - hosts: lt_nodes:lt_archive
-
   tasks:
-          - name: 'install mysql'
-            command: 'apt install mysql-server -y'
-            become: yes
+   - name: pull from git
+     git:
+       repo: https://github.com/RoyWilliams/LasairTech.git
+       dest: /home/ubuntu/LasairTech
+       update: yes
+       version: master
 
-          - name: 'permissions on mysql-files'
-            command: 'chmod 777 /var/lib/mysql-files'
-            become: yes
+   - name: install mysql
+     command: apt install mysql-server -y
+     become: yes
 
-          - name: pull from git
-            git:
-            repo: 'https://github.com/RoyWilliams/LasairTech.git'
-            dest: /home/ubuntu
-            update: yes
-            version: master
+   - name: Start the MySQL service
+     action: service name=mysql state=started
 
-          - name: 'allow remote connections'
-            command: 'sh allow_remote.sh'
-            args:
-                    chdir: 'LasairTech/database_tests/ansible/'
-            become: yes
+   - name: permissions on mysql-files
+     command: chmod 777 /var/lib/mysql-files
+     become: yes
 
-          - name: 'setup mysql'
-            command: 'mysql < mysql_setup.sql'
-            become: yes
-            args:
-                    chdir: 'LasairTech/database_tests/ansible/'
+   - name: Copy my.cnf
+    copy:
+    src: /home/ubuntu/database_tests/ansible/my.cnf
+    dest: /home/ubuntu/.my.cnf
+
+   - name: allow remote connections
+     command: sh allow_remote.sh
+     args:
+       chdir: LasairTech/database_tests/ansible/
+     become: yes
+
+   - name: setup mysql
+     #     command: mysql --user=root --password=root123password < mysql_setup.sql
+     command: mysql < mysql_setup.sql
+     args:
+       chdir: LasairTech/database_tests/ansible/

@@ -1,20 +1,26 @@
 ---
-- hosts: 'lt_nodes'
-
+- hosts: lt_nodes
   tasks:
-          - name: 'install pip'
-            command:
-                    'apt install python3-pip -y'
-            become: yes
-          - name: 'install confluent kafka'
-            command:
-                    'pip3 install confluent-kafka'
-            become: yes
-          - name: 'install fastavro'
-            command:
-                    'pip3 install fastavro'
-            become: yes
-          - name: 'install mysql connector'
-            command:
-                    'pip3 install mysql-connector-python'
-            become: yes
+    - name: install pip3
+      command: apt install python3-pip -y
+      become: yes
+
+    - name: install pip
+      command: apt install python-pip -y
+      become: yes
+
+    - name: install confluent kafka
+      command: pip3 install confluent-kafka
+      become: yes
+
+    - name: install fastavro
+      command: pip3 install fastavro
+      become: yes
+
+    - name: install mysql connector
+      command: pip3 install mysql-connector-python
+      become: yes
+
+    - name: install pymysql
+      command: pip install pymysql
+      become: yes
