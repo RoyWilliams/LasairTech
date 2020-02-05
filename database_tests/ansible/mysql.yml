@@ -10,17 +10,13 @@
             command: 'chmod 777 /var/lib/mysql-files'
             become: yes
 
-          - name: 'fetch code from github'
-            command: 'cd LasairTech'
-            register: result
-            ignore_errors: True
-          - command: 'git clone https://github.com/RoyWilliams/LasairTech.git'
-            when: result is failed
-          - command: 'git pull'
-            args:
-                    chdir: 'LasairTech'
-            when: result is succeeded
-                    
+          - name: pull from git
+            git:
+            repo: 'https://github.com/RoyWilliams/LasairTech.git'
+            dest: /home/ubuntu
+            update: yes
+            version: master
+
           - name: 'allow remote connections'
             command: 'sh allow_remote.sh'
             args:
