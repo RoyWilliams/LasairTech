@@ -2,7 +2,7 @@ ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root123p
 FLUSH PRIVILEGES;
 CREATE USER IF NOT EXISTS 'ztf'@'localhost' IDENTIFIED BY '123password';
 CREATE USER IF NOT EXISTS 'ztf'@'%' IDENTIFIED BY '123password';
-CREATE DATABASE ztf;
+CREATE DATABASE IF NOT EXISTS ztf;
 GRANT ALL PRIVILEGES ON ztf.* TO 'ztf'@'localhost';
 GRANT FILE ON *.* TO 'ztf'@'localhost';
 GRANT ALL PRIVILEGES ON *.* TO 'ztf'@'%' WITH GRANT OPTION;
