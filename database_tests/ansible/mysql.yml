@@ -20,9 +20,9 @@
      become: yes
 
    - name: Copy my.cnf
-    copy:
-    src: /home/ubuntu/database_tests/ansible/my.cnf
-    dest: /home/ubuntu/.my.cnf
+     copy:
+       src: /home/ubuntu/LasairTech/database_tests/ansible/my.cnf
+       dest: /home/ubuntu/.my.cnf
 
    - name: allow remote connections
      command: sh allow_remote.sh
@@ -31,7 +31,5 @@
      become: yes
 
    - name: setup mysql
-     #     command: mysql --user=root --password=root123password < mysql_setup.sql
-     command: mysql < mysql_setup.sql
-     args:
-       chdir: LasairTech/database_tests/ansible/
+     command: mysql < /home/ubuntu/LasairTech/database_tests/ansible/mysql_setup.sql
+     become: yes

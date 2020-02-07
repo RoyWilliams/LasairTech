@@ -17,10 +17,6 @@
       command: pip3 install fastavro
       become: yes
 
-    - name: install mysql connector
+    - name: install mysql.connector
       command: pip3 install mysql-connector-python
-      become: yes
-
-    - name: install pymysql
-      command: pip install pymysql
       become: yes
