@@ -1,7 +1,7 @@
 python3 refresh.py
 
 python3 ingestStreamThreaded.py \
---maxalert 100 \
+--maxalert 10000 \
 --nthread 1 \
 --group LASAIR-DEV2 \
 --host 192.41.108.22 \

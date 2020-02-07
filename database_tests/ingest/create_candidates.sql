@@ -1,4 +1,5 @@
-CREATE TABLE `candidates` (
+use ztf;
+CREATE TABLE IF NOT EXISTS `candidates` (
   `objectId` varchar(16) DEFAULT NULL,
   `jd` double DEFAULT NULL,
   `fid` int(11) DEFAULT NULL,
