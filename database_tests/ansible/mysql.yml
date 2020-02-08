@@ -32,6 +32,8 @@
 
    - name: make scratch directory
      command: mkdir /home/ubuntu/scratch
+   - name: make log directory
+     command: mkdir /home/ubuntu/logs
 
    - name: setup mysql
      command: mysql < /home/ubuntu/LasairTech/database_tests/ansible/mysql_setup.sql
