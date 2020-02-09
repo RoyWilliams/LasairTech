@@ -5,40 +5,40 @@
       command: apt install python3-pip -y
       become: yes
 
-   - name: pull LasairTech from git
-     git:
-       repo: https://github.com/RoyWilliams/LasairTech.git
-       dest: /home/ubuntu/LasairTech
-       update: yes
-       version: master
+    - name: pull LasairTech from git
+      git:
+        repo: https://github.com/RoyWilliams/LasairTech.git
+        dest: /home/ubuntu/LasairTech
+        update: yes
+        version: master
 
-   - name: install mysql
-     command: apt install mysql-server -y
-     become: yes
+    - name: install mysql
+      command: apt install mysql-server -y
+      become: yes
 
-   - name: Start the MySQL service
-     action: service name=mysql state=started
+    - name: Start the MySQL service
+      action: service name=mysql state=started
 
-   - name: permissions on mysql-files
-     command: chmod 777 /var/lib/mysql-files
-     become: yes
+    - name: permissions on mysql-files
+      command: chmod 777 /var/lib/mysql-files
+      become: yes
 
-   - name: Copy my.cnf
-     copy:
-       src: /home/ubuntu/LasairTech/database_tests/ansible/my.cnf
-       dest: /home/ubuntu/.my.cnf
+    - name: Copy my.cnf
+      copy:
+        src: /home/ubuntu/LasairTech/database_tests/ansible/my.cnf
+        dest: /home/ubuntu/.my.cnf
 
-   - name: allow remote connections
-     command: sh allow_remote.sh
-     args:
-       chdir: LasairTech/database_tests/ansible/
-     become: yes
+    - name: allow remote connections
+      command: sh allow_remote.sh
+      args:
+        chdir: LasairTech/database_tests/ansible/
+      become: yes
 
-   - name: make scratch directory
-     command: mkdir /home/ubuntu/scratch
-   - name: make log directory
-     command: mkdir /home/ubuntu/logs
+    - name: make scratch directory
+      command: mkdir /home/ubuntu/scratch
+    - name: make log directory
+      command: mkdir /home/ubuntu/logs
 
-   - name: setup mysql
-     command: mysql < /home/ubuntu/LasairTech/database_tests/ansible/mysql_setup.sql
-     become: yes
+    - name: setup mysql
+      command: mysql < /home/ubuntu/LasairTech/database_tests/ansible/mysql_setup.sql
+      become: yes
