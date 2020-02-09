@@ -1,7 +1,11 @@
 ---
 - hosts: lt_nodes:lt_archive
   tasks:
-   - name: pull from git
+    - name: install pip3
+      command: apt install python3-pip -y
+      become: yes
+
+   - name: pull LasairTech from git
      git:
        repo: https://github.com/RoyWilliams/LasairTech.git
        dest: /home/ubuntu/LasairTech

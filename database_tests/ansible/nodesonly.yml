@@ -1,14 +1,6 @@
 ---
 - hosts: lt_nodes
   tasks:
-    - name: install pip3
-      command: apt install python3-pip -y
-      become: yes
-
-    - name: install pip
-      command: apt install python-pip -y
-      become: yes
-
     - name: install confluent kafka
       command: pip3 install confluent-kafka
       become: yes
