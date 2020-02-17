@@ -17,7 +17,6 @@ while 1:
 
     args = ['python3', 'ingest.py']
     if nid: args.append('%d'%nid)
-    print(args)
     process = Popen(args, stdout=PIPE, stderr=PIPE)
     stdout, stderr = process.communicate()
     rc = process.returncode
