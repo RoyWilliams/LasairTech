@@ -103,13 +103,12 @@ def insert_candidate(msl, candidate, objectId):
     """
 # insert the candidate record
     query = insert_sql_candidate(candidate, objectId)
-    t = time.time()
     try:
         cursor = msl.cursor(buffered=True)
         cursor.execute(query)
         cursor.close()
     except mysql.connector.Error as err:
-        print('Database insert candidate failed: %s' % str(err))
+        print('INGEST Database insert candidate failed: %s' % str(err))
 
     msl.commit()
 
@@ -187,7 +186,7 @@ class Consumer(threading.Thread):
             streamReader = alertConsumer.AlertConsumer(self.args.topic, **self.conf)
             streamReader.__enter__()
         except alertConsumer.EopError as e:
-            print('Cannot start reader: %d: %s\n' % (self.threadID, e.message))
+            print('INGEST Cannot start reader: %d: %s\n' % (self.threadID, e.message))
             return
     
         if self.args.maxalert:
@@ -195,14 +194,13 @@ class Consumer(threading.Thread):
         else:
             maxalert = 50000
     
-        startt = time.time()
         nalert = 0
+        startt = time.time()
         while nalert < maxalert:
-            t = time.time()
             try:
                 msg = streamReader.poll(decode=True, timeout=settings.KAFKA_TIMEOUT)
             except alertConsumer.EopError as e:
-                print(self.threadID, e)
+                print('INGEST',self.threadID, e)
                 break
 
             if msg is None:
@@ -213,12 +211,12 @@ class Consumer(threading.Thread):
                     # Apply filter to each alert
                     candid = alert_filter(record, msl)
                     nalert += 1
-                    if nalert%500 == 0:
+                    if nalert%1000 == 0:
                         print('thread %d nalert %d time %.1f' % ((self.threadID, nalert, time.time()-startt)))
                         msl.close()
                         msl = make_database_connection()
     
-        print('%d: finished with %d alerts' % (self.threadID, nalert))
+        print('INGEST %d finished with %d alerts' % (self.threadID, nalert))
 
         streamReader.__exit__(0,0,0)
 
@@ -256,9 +254,6 @@ def main():
     # wait for them to finish
     for th in thread_list:
          th.join()
-
-    time_total = time.time() - t
-    print('Run time %f' % time_total)
 
 if __name__ == '__main__':
     main()
