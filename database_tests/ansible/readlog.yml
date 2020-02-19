@@ -1,0 +1,12 @@
+---
+- hosts: lt_nodes
+  tasks:
+    - name: get logs
+      archive:
+        path: logs
+        dest: logs.tgz
+
+    - name: Copy my.cnf
+      fetch:
+        src: logs.tgz
+        dest: /home/ubuntu

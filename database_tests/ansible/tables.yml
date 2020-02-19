@@ -1,5 +1,0 @@
----
-- hosts: lt_nodes:lt_archive
-  tasks:
-   - name: candidate table
-     command: mysql --user=ztf --database=ztf --password=123password < /home/ubuntu/LasairTech/database_tests/ingest/create_candidates.sql
