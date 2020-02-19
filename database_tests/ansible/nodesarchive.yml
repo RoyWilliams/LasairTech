@@ -42,3 +42,8 @@
 #    - name: setup mysql
 #      command: mysql < /home/ubuntu/LasairTech/database_tests/ansible/mysql_setup.sql
 #      become: yes
+#
+#    - name: candidate table
+#     command: mysql --user=ztf --database=ztf --password=123password < /home/ubuntu/LasairTech/database_tests/ingest/create_candidates.sql
+#     become: yes
+
