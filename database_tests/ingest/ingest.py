@@ -1,6 +1,7 @@
 import os,sys
 import time
 from socket import gethostname
+from datetime import datetime
 import settings
 import date_nid
 
@@ -13,11 +14,11 @@ date = date_nid.nid_to_date(nid)
 topic  = 'ztf_' + date + '_programid1'
 
 os.system('date')
-print('INGEST start %d' % time.time())
 print('clear local caches')
 cmd = 'python3 refresh.py'
 os.system(cmd)
 
+print('INGEST start %s' % datetime.utcnow().strftime("%H:%M:%S"))
 print('ingest from kafka')
 print("Topic is %s, nid is %d" % (topic, nid))
 t = time.time()
