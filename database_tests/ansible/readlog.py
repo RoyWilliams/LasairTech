@@ -41,4 +41,5 @@ for dir in os.listdir('/home/ubuntu'):
         print('Found %d records in %s' % (len(hostrecord), dir))
     result[dir] = hostrecord
 
-print(json.dumps(result, indent=2))
+f = open('logs.json', 'w')
+f.write(json.dumps(result, indent=2))
