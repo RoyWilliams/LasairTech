@@ -14,12 +14,12 @@ for (host, data) in alldata.items():
     run = []
     for d in data:
         start.append (d['start'])
-        apm.append(d['alerts']*60.0/d['run'])
-        run.append   (d['run'])
+        apm.append   (d['alerts']*60.0/d['run'])
+        run.append   (d['run']/3600.0)
     ax = axes[int(j/2), j%2]
     ax.bar(start, apm, run, align='edge')
     ax.set(ylabel='alerts per minute ' + host)
-    ax.set_ylim(ymax=400)
+    ax.set_ylim(ymax=1000)
     j += 1
-#plt.show()
-plt.savefig('logs.png')
+plt.show()
+#plt.savefig('logs.png')
