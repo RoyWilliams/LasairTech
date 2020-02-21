@@ -26,7 +26,8 @@ for dir in os.listdir('/home/ubuntu'):
             if not line.startswith('INGEST'):
                 continue
             if 'start' in line:
-                s['start'] = int(line.split()[2])
+                t = line.split()[2].split(':')
+                s['start'] = int(t[0]) + int(t[1])/60.0 + int(t[2])/3600.0
             if 'finished' in line:
                 alerts = int(line.split()[4])
                 s['alerts'] = alerts
