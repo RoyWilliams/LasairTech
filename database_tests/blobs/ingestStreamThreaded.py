@@ -9,7 +9,6 @@ import os
 import time
 import settings
 import mysql.connector
-from mag import dc_mag
 import threading
 import alertConsumer
 
@@ -37,7 +36,7 @@ def write_stamp_file(stamp_dict, output_dir):
         print('%% Cannot get stamp\n')
     return
 
-def alert_filter(alert, msl):
+def alert_filter(alert, stampdir):
     """Filter to apply to each alert.
        See schemas: https://github.com/ZwickyTransientFacility/ztf-avro-alert
     """
@@ -65,24 +64,22 @@ def parse_args():
                         help='Max alerts to be fetched per thread')
     parser.add_argument('--nthread', type=int,
                         help='Number of threads to use')
+    parser.add_argument('--stampdir', type=str,
+                        help='Directory for blobs')
 
     args = parser.parse_args()
 
     return args
 
 class Consumer(threading.Thread):
-    def __init__(self, threadID, args, conf):
+    def __init__(self, threadID, args, stampdir, conf):
         threading.Thread.__init__(self)
         self.threadID = threadID
         self.conf = conf
+        self.stampdir = stampdir
         self.args = args
 
     def run(self):
-        # Configure database connection
-        msl = make_database_connection()
-    
-        # Start consumer and print alert stream
-        
         try:
             streamReader = alertConsumer.AlertConsumer(self.args.topic, **self.conf)
             streamReader.__enter__()
@@ -110,7 +107,7 @@ class Consumer(threading.Thread):
             else:
                 for record in msg:
                     # Apply filter to each alert
-                    candid = alert_filter(record, msl)
+                    candid = alert_filter(record, stampdir)
                     nalert += 1
                     if nalert%1000 == 0:
                         print('thread %d nalert %d time %.1f' % ((self.threadID, nalert, time.time()-startt)))
@@ -145,7 +142,7 @@ def main():
     # make the thread list
     thread_list = []
     for t in range(args.nthread):
-        thread_list.append(Consumer(t, args, conf))
+        thread_list.append(Consumer(t, args, args.stampdir, conf))
     
     # start them up
     t = time.time()
