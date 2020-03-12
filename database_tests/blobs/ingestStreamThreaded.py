@@ -11,6 +11,7 @@ import settings
 import mysql.connector
 import threading
 import alertConsumer
+import objectStore
 
 def msg_text(message):
     """Remove postage stamp cutouts from an alert message.
@@ -19,34 +20,35 @@ def msg_text(message):
                     if k not in ['cutoutDifference', 'cutoutTemplate', 'cutoutScience']}
     return message_text
 
-def write_stamp_file(stamp_dict, output_dir):
+def write_stamp_file(stamp_dict, store):
     """Given a stamp dict that follows the cutout schema,
        write data to a file in a given directory.
     """
-    try:
-        filename = stamp_dict['fileName']
-        try:
-            os.makedirs(output_dir)
-        except OSError:
-            pass
-        out_path = os.path.join(output_dir, filename)
-        with open(out_path, 'wb') as f:
-            f.write(stamp_dict['stampData'])
-    except TypeError:
-        print('%% Cannot get stamp\n')
+    store.putObject(stamp_dict['fileName'], stamp_dict['stampData'])
+#    try:
+#        filename = stamp_dict['fileName']
+#        try:
+#            os.makedirs(output_dir)
+#        except OSError:
+#            pass
+#        out_path = os.path.join(output_dir, filename)
+#        with open(out_path, 'wb') as f:
+#            f.write(stamp_dict['stampData'])
+#    except TypeError:
+#        print('%% Cannot get stamp\n')
     return
 
-def alert_filter(alert, stampdir):
+def alert_filter(alert, store):
     """Filter to apply to each alert.
        See schemas: https://github.com/ZwickyTransientFacility/ztf-avro-alert
     """
     candid = 0
     data = msg_text(alert)
     if data:  # Write your condition statement here
-        if stampdir:  # Collect all postage stamps
-            write_stamp_file( alert.get('cutoutDifference'), stampdir)
-            write_stamp_file( alert.get('cutoutTemplate'),   stampdir)
-            write_stamp_file( alert.get('cutoutScience'),    stampdir)
+        if store:  # Collect all postage stamps
+            write_stamp_file( alert.get('cutoutDifference'), store)
+            write_stamp_file( alert.get('cutoutTemplate'),   store)
+            write_stamp_file( alert.get('cutoutScience'),    store)
         return candid
 
 def parse_args():
@@ -72,11 +74,11 @@ def parse_args():
     return args
 
 class Consumer(threading.Thread):
-    def __init__(self, threadID, args, stampdir, conf):
+    def __init__(self, threadID, args, store, conf):
         threading.Thread.__init__(self)
         self.threadID = threadID
         self.conf = conf
-        self.stampdir = stampdir
+        self.store = store
         self.args = args
 
     def run(self):
@@ -107,7 +109,7 @@ class Consumer(threading.Thread):
             else:
                 for record in msg:
                     # Apply filter to each alert
-                    candid = alert_filter(record, stampdir)
+                    candid = alert_filter(record, self.store)
                     nalert += 1
                     if nalert%1000 == 0:
                         print('thread %d nalert %d time %.1f' % ((self.threadID, nalert, time.time()-startt)))
@@ -131,6 +133,9 @@ def main():
     if args.group: conf['group.id'] = args.group
     else:          conf['group.id'] = 'LASAIR'
 
+    if args.stampdir:
+        store = obj.objectStore(suffix='fits', fileroot='stampdir')
+
     print('Configuration = %s' % str(conf))
 
     if args.nthread:
@@ -142,7 +147,7 @@ def main():
     # make the thread list
     thread_list = []
     for t in range(args.nthread):
-        thread_list.append(Consumer(t, args, args.stampdir, conf))
+        thread_list.append(Consumer(t, args, store, conf))
     
     # start them up
     t = time.time()
