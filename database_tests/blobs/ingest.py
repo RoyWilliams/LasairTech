@@ -20,7 +20,7 @@ print('ingest from kafka')
 print("Topic is %s, nid is %d" % (topic, nid))
 t = time.time()
 
-cmd =  'python3 ingestStreamThreaded.py '
+cmd =  'python3 ingestBatch.py '
 cmd += '--maxalert %d ' % settings.KAFKA_MAXALERTS
 cmd += '--nthread %d '  % settings.KAFKA_THREADS
 cmd += '--stampdir %s ' % settings.BLOB_FILEROOT

@@ -2,6 +2,8 @@
 # Roy Williams 2020
 
 import os
+import hashlib
+
 class objectStore():
     def __init__(self, suffix='txt', fileroot='/data'):
         os.system('mkdir -p ' + fileroot)
@@ -9,11 +11,12 @@ class objectStore():
         self.suffix = suffix
     
     def getFileName(self, objectId, mkdir=False):
-        dir = '%03d' % (hash(objectId) % 1000)
+        h = hashlib.md5(objectId.encode())
+        dir = h.hexdigest()[:3]
         if mkdir:
             try:
                 os.makedirs(self.fileroot+'/'+dir)
-                print('made %s' % dir)
+                print('%s made %s' % (self.suffix, dir))
             except:
                 pass
         return self.fileroot +'/%s/%s.%s' % (dir, objectId, self.suffix)
@@ -32,6 +35,12 @@ class objectStore():
         f.close()
 
     def getObjects(self, objectIdList):
+        D = {}
+        for objectId in L:
+            s = self.getObject(objectId)
+            D[objectId] = json.loads(s)
+        return json.dumps(D, indent=2))
+
         L = []
         for objectId in objectIdList:
             L.append(self.getObject(objectId))

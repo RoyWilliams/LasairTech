@@ -13,6 +13,28 @@ import alertConsumer
 import objectStore
 import json
 
+def parse_args():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--host', type=str,
+                        help='Hostname or IP of Kafka host to connect to.')
+    parser.add_argument('--topic', type=str,
+                        help='Name of Kafka topic to listen to.')
+    parser.add_argument('--group', type=str,
+                        help='Globally unique name of the consumer group. '
+                        'Consumers in the same group will share messages '
+                        '(i.e., only one consumer will receive a message, '
+                        'as in a queue). Default is value of $HOSTNAME.')
+    parser.add_argument('--maxalert', type=int,
+                        help='Max alerts to be fetched per thread')
+    parser.add_argument('--nthread', type=int,
+                        help='Number of threads to use')
+    parser.add_argument('--stampdir', type=str,
+                        help='Directory for blobs')
+
+    args = parser.parse_args()
+
+    return args
+
 def msg_text(message):
     """Remove postage stamp cutouts from an alert message.
     """
@@ -47,28 +69,6 @@ def write_blobs(alert, store):
         if 'lightcurve' in store:
             write_lightcurve_file(data, store['lightcurve'])
         return candid
-
-def parse_args():
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--host', type=str,
-                        help='Hostname or IP of Kafka host to connect to.')
-    parser.add_argument('--topic', type=str,
-                        help='Name of Kafka topic to listen to.')
-    parser.add_argument('--group', type=str,
-                        help='Globally unique name of the consumer group. '
-                        'Consumers in the same group will share messages '
-                        '(i.e., only one consumer will receive a message, '
-                        'as in a queue). Default is value of $HOSTNAME.')
-    parser.add_argument('--maxalert', type=int,
-                        help='Max alerts to be fetched per thread')
-    parser.add_argument('--nthread', type=int,
-                        help='Number of threads to use')
-    parser.add_argument('--stampdir', type=str,
-                        help='Directory for blobs')
-
-    args = parser.parse_args()
-
-    return args
 
 class Consumer(threading.Thread):
     def __init__(self, threadID, args, store, conf):
@@ -118,10 +118,6 @@ class Consumer(threading.Thread):
 def main():
     args = parse_args()
 
-    # Configure consumer connection to Kafka broker
-#    print('Connecting to Kafka at %s' % args.host)
-#    conf = {'bootstrap.servers': '{}:9092,{}:9093,{}:9094'.format(args.host,args.host,args.host),
-#            'default.topic.config': {'auto.offset.reset': 'smallest'}}
     conf = {'bootstrap.servers': '{}:9092'.format(args.host,args.host,args.host),
             'default.topic.config': {'auto.offset.reset': 'smallest'}}
 
