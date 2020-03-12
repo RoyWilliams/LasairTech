@@ -1,0 +1,23 @@
+---
+- hosts: lt_nodes:lt_archive
+  tasks:
+    - name: apt update
+      command: apt update
+      become: yes
+
+    - name: install pip3
+      command: apt install python3-pip -y
+      become: yes
+
+    - name: pull LasairTech from git
+      git:
+        repo: https://github.com/RoyWilliams/LasairTech.git
+        dest: /home/ubuntu/LasairTech
+        update: yes
+        version: master
+
+    - name: make scratch directory
+      command: mkdir /home/ubuntu/scratch
+
+    - name: make log directory
+      command: mkdir /home/ubuntu/logs

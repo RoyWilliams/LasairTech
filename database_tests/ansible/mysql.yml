@@ -1,0 +1,36 @@
+- hosts: lt_nodes:lt_archive
+  tasks:
+    - name: install mysql.connector
+      command: pip3 install mysql-connector-python
+      become: yes
+
+    - name: install mysql
+      command: apt install mysql-server -y
+      become: yes
+
+    - name: Start the MySQL service
+      action: service name=mysql state=started
+
+    - name: permissions on mysql-files
+      command: chmod 777 /var/lib/mysql-files
+      become: yes
+
+    - name: Copy my.cnf
+      copy:
+        src: /home/ubuntu/LasairTech/database_tests/ansible/my.cnf
+        dest: /home/ubuntu/.my.cnf
+
+    - name: allow remote connections
+      command: sh allow_remote.sh
+      args:
+        chdir: LasairTech/database_tests/ansible/
+      become: yes
+
+#    - name: setup mysql
+#      command: mysql < /home/ubuntu/LasairTech/database_tests/ansible/mysql_setup.sql
+#      become: yes
+#
+#    - name: candidate table
+#     command: mysql --user=ztf --database=ztf --password=123password < /home/ubuntu/LasairTech/database_tests/ingest/create_candidates.sql
+#     become: yes
+

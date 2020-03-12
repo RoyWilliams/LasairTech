@@ -1,0 +1,9 @@
+---
+- hosts: lt_nodes
+  tasks:
+    - name: make local data directory
+      file:
+        path: /data/stamps/
+        state: directory
+        owner: ubuntu
+      become: yes
