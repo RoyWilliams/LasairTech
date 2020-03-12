@@ -8,7 +8,6 @@ import sys
 import os
 import time
 import settings
-import mysql.connector
 import threading
 import alertConsumer
 import objectStore
