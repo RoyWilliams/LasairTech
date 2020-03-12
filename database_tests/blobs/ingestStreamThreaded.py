@@ -24,7 +24,9 @@ def write_stamp_file(stamp_dict, store):
     """Given a stamp dict that follows the cutout schema,
        write data to a file in a given directory.
     """
-    store.putObject(stamp_dict['fileName'], stamp_dict['stampData'])
+    t = stamp_dict['fileName'].split('.')
+    u = t[0].split('/')
+    store.putObject(u[-1], stamp_dict['stampData'])
 #    try:
 #        filename = stamp_dict['fileName']
 #        try:
@@ -113,8 +115,6 @@ class Consumer(threading.Thread):
                     nalert += 1
                     if nalert%1000 == 0:
                         print('thread %d nalert %d time %.1f' % ((self.threadID, nalert, time.time()-startt)))
-                        msl.close()
-                        msl = make_database_connection()
     
         print('INGEST %d finished with %d alerts' % (self.threadID, nalert))
 
@@ -133,8 +133,7 @@ def main():
     if args.group: conf['group.id'] = args.group
     else:          conf['group.id'] = 'LASAIR'
 
-    if args.stampdir:
-        store = obj.objectStore(suffix='fits', fileroot='stampdir')
+    store = objectStore.objectStore(suffix='fits.gz', fileroot=args.stampdir)
 
     print('Configuration = %s' % str(conf))
 

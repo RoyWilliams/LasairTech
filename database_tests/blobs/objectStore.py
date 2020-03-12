@@ -9,10 +9,11 @@ class objectStore():
         self.suffix = suffix
     
     def getFileName(self, objectId, mkdir=False):
-        dir = objectId[-3:] # last 3 characters
+        dir = '%03d' % (hash(objectId) % 1000)
         if mkdir:
             try:
                 os.makedirs(self.fileroot+'/'+dir)
+                print('made %s' % dir)
             except:
                 pass
         return self.fileroot +'/%s/%s.%s' % (dir, objectId, self.suffix)
@@ -24,7 +25,9 @@ class objectStore():
         return str
 
     def putObject(self, objectId, objectBlob):
-        f = open(self.getFileName(objectId, mkdir=True), 'wb')
+        filename = self.getFileName(objectId, mkdir=True)
+#        print(objectId, filename)
+        f = open(filename, 'wb')
         f.write(objectBlob)
         f.close()
 
