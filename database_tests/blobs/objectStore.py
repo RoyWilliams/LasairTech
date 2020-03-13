@@ -39,7 +39,7 @@ class objectStore():
         for objectId in L:
             s = self.getObject(objectId)
             D[objectId] = json.loads(s)
-        return json.dumps(D, indent=2))
+        return json.dumps(D, indent=2)
 
         L = []
         for objectId in objectIdList:
