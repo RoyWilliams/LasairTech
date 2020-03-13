@@ -1,0 +1,15 @@
+---
+- hosts: lt_nodes:lt_archive
+  tasks:
+    - name: git pull
+      shell: 
+        cmd: git pull
+        chdir: /home/ubuntu/LasairTech
+
+
+          #    - name: pull LasairTech from git
+          #git:
+          #repo: https://github.com/RoyWilliams/LasairTech.git
+          #dest: /home/ubuntu/LasairTech
+          #update: yes
+          #version: master

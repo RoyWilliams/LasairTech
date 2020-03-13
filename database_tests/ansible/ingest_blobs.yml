@@ -2,5 +2,8 @@
 - hosts: lt_nodes
   tasks:
     - name: start up ingestion in parallel
-      command: "cd /home/ubuntu/LasairTech/database_tests/blobs; python3 ingest.py 1161 >> /home/ubuntu/logs.txt"
-      become: yes
+      shell:
+        chdir: /home/ubuntu/LasairTech/database_tests/blobs
+        cmd: sudo python3 ingest.py 1161 >> /home/ubuntu/logs.txt
+        async: 600  # max runtime
+        poll: 0  # Fire and continue (never poll)
