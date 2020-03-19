@@ -14,10 +14,10 @@ A single batch ingestion can be run with this code. It pulls a batch of alerts, 
 then copies that data to the archive node, where it is put into the master database. Note there are 
 two levels of parallelism: each of many worker nodes can run multiple threads.
 * ingest.py
- * ingestStreamThreaded.py
- * alertConsumer.py
- * date_nid.py
- * mag.py
+  * ingestStreamThreaded.py
+  * alertConsumer.py
+  * date_nid.py
+  * mag.py
 
 This code runs continual ingestion batches, logging into the node-local file system.
 * ingest_log.py
