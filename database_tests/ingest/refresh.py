@@ -1,3 +1,7 @@
+"""
+This code truncates the local database tables after the content
+has been sent to the archive
+"""
 import settings
 import mysql.connector
 config = {

@@ -1,3 +1,6 @@
+"""
+Code to work with the nid number for ZTF and regular dates 
+"""
 import datetime
 from time import gmtime
 

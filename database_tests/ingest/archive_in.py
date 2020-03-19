@@ -1,4 +1,10 @@
+"""
+This code runs on the archive node, taking a CSV file and ingesting 
+it into the master database.
+"""
 import os, sys
+
+# There must be a filename argument here for the CSV file
 file = sys.argv[1]
 print(file)
 

@@ -1,3 +1,6 @@
+"""
+This is a lot of helper code for the Kafka ingestion.
+"""
 from __future__ import print_function
 import io
 import time

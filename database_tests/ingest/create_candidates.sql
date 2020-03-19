@@ -1,3 +1,5 @@
+/* Build the candidates table for Lasair-ZTF */
+/* This is used for the worker nodes and the archive node */
 use ztf;
 CREATE TABLE IF NOT EXISTS `candidates` (
   `objectId` varchar(16) DEFAULT NULL,

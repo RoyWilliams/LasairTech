@@ -1,5 +1,5 @@
-"""Consumes stream for ingesting to database
-
+"""
+Consumes stream for ingesting to database
 """
 
 from __future__ import print_function
@@ -32,12 +32,7 @@ wanted_attributes = [
 'neargaiabright', 'maggaia', 'maggaiabright', 'exptime', 'drb', 'drbversion',
 'htmid16']
 
-# Configure Avro reader schema
 schema_files = []
-#schema_files = ['ztf-avro-alert/schema/candidate.avsc',
-#                'ztf-avro-alert/schema/cutout.avsc',
-#                'ztf-avro-alert/schema/prv_candidate.avsc',
-#                'ztf-avro-alert/schema/alert.avsc']
 
 def insert_sql_candidate(candidate, objectId):
     """ Creates an insert sql statement for insering the canditate info
@@ -85,7 +80,6 @@ def insert_sql_candidate(candidate, objectId):
     values.append(str(d['dc_mag']))
     names.append('dc_sigmag')
     values.append(str(d['dc_sigmag']))
-
 
 # and here is the SQL
     sql = 'INSERT IGNORE INTO candidates \n(%s) \nVALUES \n(%s)' % (','.join(names), ','.join(values))
@@ -196,6 +190,7 @@ class Consumer(threading.Thread):
     
         nalert = 0
         startt = time.time()
+############## Main loop polling Kafka ################
         while nalert < maxalert:
             try:
                 msg = streamReader.poll(decode=True, timeout=settings.KAFKA_TIMEOUT)
@@ -204,7 +199,6 @@ class Consumer(threading.Thread):
                 break
 
             if msg is None:
-#                print(self.threadID, 'null message')
                 break
             else:
                 for record in msg:
@@ -220,13 +214,13 @@ class Consumer(threading.Thread):
 
         streamReader.__exit__(0,0,0)
 
+#####################################################
+# Multi-threaded Kafka consumers 
+#####################################################
 def main():
     args = parse_args()
 
     # Configure consumer connection to Kafka broker
-#    print('Connecting to Kafka at %s' % args.host)
-#    conf = {'bootstrap.servers': '{}:9092,{}:9093,{}:9094'.format(args.host,args.host,args.host),
-#            'default.topic.config': {'auto.offset.reset': 'smallest'}}
     conf = {'bootstrap.servers': '{}:9092'.format(args.host,args.host,args.host),
             'default.topic.config': {'auto.offset.reset': 'smallest'}}
 

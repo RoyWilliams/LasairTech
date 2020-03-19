@@ -1,3 +1,6 @@
+"""
+Computes the apparent magnitude from the difference magnitude.
+"""
 import math
 
 def dc_mag(fid, magpsf,sigmapsf, magnr,sigmagnr, magzpsci, isdiffpos):
