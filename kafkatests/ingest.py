@@ -120,13 +120,13 @@ class Consumer(threading.Thread):
                 print(self.threadID, e)
                 break
 
-            nalert += 1
             if nalert%5000 == 0:
                 print('thread %d nalert %d time %.1f' % ((self.threadID, nalert, time.time()-startt)))
 
             if msg is None:
                 break
             else:
+                nalert += 1
                 for record in msg:
                     candid = alert_filter(record)
         print('%d: finished with %d alerts' % (self.threadID, nalert))
