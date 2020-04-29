@@ -23,7 +23,7 @@ def msg_text(message):
                     if k not in ['cutoutDifference', 'cutoutTemplate', 'cutoutScience']}
     return message_text
 
-def alert_filter(alert):
+def alert_filter(alert, summary = None):
     """Filter to apply to each alert.
        See schemas: https://github.com/ZwickyTransientFacility/ztf-avro-alert
     """
@@ -33,6 +33,7 @@ def alert_filter(alert):
 
         objectId = data['objectId']
         candid   = data['candid']
+        summ = '%s %d %.2f ' % (objectId, candid, data['candidate']['jd'])
 
 # look for non detection limiting magnitude
         prv_array = data['prv_candidates']
@@ -42,10 +43,11 @@ def alert_filter(alert):
             for prv in prv_array:
                 if prv['candid']:
                     if prv['magpsf']:
+                        summ += '%d ' % prv['candid']
 #                        insert_candidate(msl, prv, objectId, stalefile)
 #                        print('%s %s' % (objectId, str(prv['candid'])))
-                        pass
                 else:
+                    summ += 'N '
                     jd         = prv['jd']
                     fid        = prv['fid']
                     diffmaglim = prv['diffmaglim']
@@ -55,6 +57,8 @@ def alert_filter(alert):
                 query4 = 'INSERT INTO noncandidates (objectId, jd, fid, diffmaglim) VALUES '
                 query4 += ', '.join(noncanlist)
 
+        if summary:
+            summary.write(summ + '\n')
         t = time.time()
         return candid
 
@@ -62,6 +66,8 @@ def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--host', type=str,
                         help='Hostname or IP of Kafka host to connect to.')
+    parser.add_argument('--summary', type=str,
+                        help='Filenames for summary')
     parser.add_argument('--topic', type=str,
                         help='Name of Kafka topic to listen to.')
     parser.add_argument('--group', type=str,
@@ -109,6 +115,8 @@ class Consumer(threading.Thread):
         else:                  maxalert = 50000
         if self.args.timeout:  timeout = self.args.timeout
         else:                  timeout = 60
+        if self.args.summary:  summary = open('%s%02d.txt' % (self.args.summary, self.threadID), 'a')
+        else:                  summary = None
     
         startt = time.time()
         nalert = 0
@@ -117,10 +125,9 @@ class Consumer(threading.Thread):
             try:
                 msg = streamReader.poll(decode=True, timeout=timeout)
             except alertConsumer.EopError as e:
-                print(self.threadID, e)
-                break
+                continue
 
-            if nalert%5000 == 0:
+            if nalert%500 == 0:
                 print('thread %d nalert %d time %.1f' % ((self.threadID, nalert, time.time()-startt)))
 
             if msg is None:
@@ -128,7 +135,7 @@ class Consumer(threading.Thread):
             else:
                 nalert += 1
                 for record in msg:
-                    candid = alert_filter(record)
+                    candid = alert_filter(record, summary)
         print('%d: finished with %d alerts' % (self.threadID, nalert))
 
         streamReader.__exit__(0,0,0)
