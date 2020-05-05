@@ -51,24 +51,21 @@ def write_stamp_file(stamp_dict, store):
     store.putObject(u[-1], stamp_dict['stampData'])
     return
 
-def write_lightcurve_file(alert, store):
-    s = json.dumps(alert, indent=2).encode()
-    store.putObject(alert['objectId'], s)
-
-def write_blobs(alert, store):
+def handle_alert(alert, store):
     """Filter to apply to each alert.
        See schemas: https://github.com/ZwickyTransientFacility/ztf-avro-alert
     """
-    candid = 0
-    data = msg_text(alert)
-    if data:  # Write your condition statement here
+    nonimage = msg_text(alert)
+    if nonimage:  # Write your condition statement here
         if 'fits' in store:  # Collect all postage stamps
             write_stamp_file( alert.get('cutoutDifference'), store['fits'])
             write_stamp_file( alert.get('cutoutTemplate'),   store['fits'])
             write_stamp_file( alert.get('cutoutScience'),    store['fits'])
+
         if 'lightcurve' in store:
-            write_lightcurve_file(data, store['lightcurve'])
-        return candid
+            slc = store['lightcurve']
+            s = json.dumps(nonimage, indent=2).encode()
+            store.putObject(nonimage['objectId'], s)
 
 class Consumer(threading.Thread):
     def __init__(self, threadID, args, store, conf):
@@ -97,16 +94,15 @@ class Consumer(threading.Thread):
             try:
                 msg = streamReader.poll(decode=True, timeout=settings.KAFKA_TIMEOUT)
             except alertConsumer.EopError as e:
-                print('INGEST',self.threadID, e)
-                break
+                continue
 
             if msg is None:
 #                print(self.threadID, 'null message')
                 break
             else:
-                for record in msg:
+                for alert in msg:
                     # Apply filter to each alert
-                    candid = write_blobs(record, self.store)
+                    candid = handle_alert(alert, self.store)
                     nalert += 1
                     if nalert%1000 == 0:
                         print('thread %d nalert %d time %.1f' % ((self.threadID, nalert, time.time()-startt)))

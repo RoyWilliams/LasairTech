@@ -13,6 +13,9 @@ else:
 date = date_nid.nid_to_date(nid)
 topic  = 'ztf_' + date + '_programid1'
 
+# for testing purposes
+topic = ztf_test
+
 os.system('date')
 
 print('INGEST start %s' % datetime.utcnow().strftime("%H:%M:%S"))
