@@ -1,3 +1,9 @@
+"""
+This code will run forever on the worker nodes. It repeatedly runs the ingest.py
+script, each time getting a batch of alerts into the local database, then flushing 
+those to the master database. Logging output goes to a file coded by date.
+If there were alerts, it runs again immediately, if not it waits before trying again.
+"""
 import sys
 import settings
 import date_nid

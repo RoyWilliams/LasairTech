@@ -12,6 +12,29 @@ import threading
 import alertConsumer
 import objectStore
 import json
+from confluent_kafka import Producer, KafkaError
+
+def parse_args():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--topic', type=str,
+                        help='Name of Kafka topic to listen to.')
+    parser.add_argument('--topicout', type=str,
+                        help='Name of Kafka topic to send out alerts.')
+    parser.add_argument('--group', type=str,
+                        help='Globally unique name of the consumer group. '
+                        'Consumers in the same group will share messages '
+                        '(i.e., only one consumer will receive a message, '
+                        'as in a queue). Default is value of $HOSTNAME.')
+    parser.add_argument('--maxalert', type=int,
+                        help='Max alerts to be fetched per thread')
+    parser.add_argument('--nthread', type=int,
+                        help='Number of threads to use')
+    parser.add_argument('--stampdir', type=str,
+                        help='Directory for blobs')
+
+    args = parser.parse_args()
+
+    return args
 
 def msg_text(message):
     """Remove postage stamp cutouts from an alert message.
@@ -29,46 +52,28 @@ def write_stamp_file(stamp_dict, store):
     store.putObject(u[-1], stamp_dict['stampData'])
     return
 
-def write_lightcurve_file(alert, store):
-    s = json.dumps(alert, indent=2).encode()
-    store.putObject(alert['objectId'], s)
-
-def write_blobs(alert, store):
+def handle_alert(alert, store, producer, topicout):
     """Filter to apply to each alert.
        See schemas: https://github.com/ZwickyTransientFacility/ztf-avro-alert
     """
-    candid = 0
-    data = msg_text(alert)
-    if data:  # Write your condition statement here
+    nonimage = msg_text(alert)
+    if nonimage:  # Write your condition statement here
         if 'fits' in store:  # Collect all postage stamps
             write_stamp_file( alert.get('cutoutDifference'), store['fits'])
             write_stamp_file( alert.get('cutoutTemplate'),   store['fits'])
             write_stamp_file( alert.get('cutoutScience'),    store['fits'])
+
+        s = json.dumps(nonimage, indent=2).encode()
         if 'lightcurve' in store:
-            write_lightcurve_file(data, store['lightcurve'])
-        return candid
+            slc = store['lightcurve']
+            slc.putObject(nonimage['objectId'], s)
 
-def parse_args():
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--host', type=str,
-                        help='Hostname or IP of Kafka host to connect to.')
-    parser.add_argument('--topic', type=str,
-                        help='Name of Kafka topic to listen to.')
-    parser.add_argument('--group', type=str,
-                        help='Globally unique name of the consumer group. '
-                        'Consumers in the same group will share messages '
-                        '(i.e., only one consumer will receive a message, '
-                        'as in a queue). Default is value of $HOSTNAME.')
-    parser.add_argument('--maxalert', type=int,
-                        help='Max alerts to be fetched per thread')
-    parser.add_argument('--nthread', type=int,
-                        help='Number of threads to use')
-    parser.add_argument('--stampdir', type=str,
-                        help='Directory for blobs')
-
-    args = parser.parse_args()
-
-    return args
+        if producer is not None:
+            try:
+                producer.produce(topicout, s)
+            except Exception as e:
+                print("Kafka production failed for %s" % topicout)
+                print(e)
 
 class Consumer(threading.Thread):
     def __init__(self, threadID, args, store, conf):
@@ -85,6 +90,22 @@ class Consumer(threading.Thread):
         except alertConsumer.EopError as e:
             print('INGEST Cannot start reader: %d: %s\n' % (self.threadID, e.message))
             return
+
+        if self.args.topicout:
+            conf = {
+                'bootstrap.servers': '%s' % settings.KAFKA_OUTPUT,
+                'group.id': 'copy-topic',
+                'client.id': 'client-1',
+                'enable.auto.commit': True,
+                'session.timeout.ms': 6000,
+                'default.topic.config': {'auto.offset.reset': 'smallest'}
+            }
+            producer = Producer(conf)
+            topicout = self.args.topicout
+            print('Producing Kafka to %s with topic %s' % (settings.KAFKA_OUTPUT, topicout))
+        else:
+            producer = None
+            kafkaout = None
     
         if self.args.maxalert:
             maxalert = self.args.maxalert
@@ -97,36 +118,42 @@ class Consumer(threading.Thread):
             try:
                 msg = streamReader.poll(decode=True, timeout=settings.KAFKA_TIMEOUT)
             except alertConsumer.EopError as e:
-                print('INGEST',self.threadID, e)
-                break
+                continue
 
             if msg is None:
-#                print(self.threadID, 'null message')
                 break
             else:
-                for record in msg:
+                for alert in msg:
                     # Apply filter to each alert
-                    candid = write_blobs(record, self.store)
+                    candid = handle_alert(alert, self.store, producer, topicout)
                     nalert += 1
                     if nalert%1000 == 0:
                         print('thread %d nalert %d time %.1f' % ((self.threadID, nalert, time.time()-startt)))
+                        if producer is not None:
+                            producer.flush()
     
+        if producer is not None:
+            producer.flush()
+            print('kafka flushed')
         print('INGEST %d finished with %d alerts' % (self.threadID, nalert))
 
+          
         streamReader.__exit__(0,0,0)
 
 def main():
     args = parse_args()
 
-    # Configure consumer connection to Kafka broker
-#    print('Connecting to Kafka at %s' % args.host)
-#    conf = {'bootstrap.servers': '{}:9092,{}:9093,{}:9094'.format(args.host,args.host,args.host),
-#            'default.topic.config': {'auto.offset.reset': 'smallest'}}
-    conf = {'bootstrap.servers': '{}:9092'.format(args.host,args.host,args.host),
-            'default.topic.config': {'auto.offset.reset': 'smallest'}}
+    if args.group: groupid = args.group
+    else:          groupid = 'LASAIR'
 
-    if args.group: conf['group.id'] = args.group
-    else:          conf['group.id'] = 'LASAIR'
+    conf = {
+        'bootstrap.servers': '%s' % settings.KAFKA_INPUT,
+        'group.id': groupid,
+        'client.id': 'client-1',
+        'enable.auto.commit': True,
+        'session.timeout.ms': 6000,
+        'default.topic.config': {'auto.offset.reset': 'smallest'}
+    }
 
     store = {
         'fits'      : objectStore.objectStore(suffix='fits.gz', fileroot=args.stampdir + '/fits'),

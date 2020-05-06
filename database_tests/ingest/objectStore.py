@@ -16,7 +16,7 @@ class objectStore():
         if mkdir:
             try:
                 os.makedirs(self.fileroot+'/'+dir)
-                print('%s made %s' % (self.suffix, dir))
+#                print('%s made %s' % (self.suffix, dir))
             except:
                 pass
         return self.fileroot +'/%s/%s.%s' % (dir, objectId, self.suffix)

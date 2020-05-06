@@ -3,5 +3,5 @@
   tasks:
     - name: start up ingestion in parallel
       shell:
-        chdir: /home/ubuntu/LasairTech/database_tests/blobs
+        chdir: /home/ubuntu/LasairTech/database_tests/ingest
         cmd: sudo python3 ingest.py 1163 >> /home/ubuntu/logs.txt &

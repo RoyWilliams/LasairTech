@@ -6,7 +6,7 @@ if len(sys.argv) < 2:
     sys.exit()
 kafka_server = sys.argv[1]
 
-group_id = 'LASAIR4'
+group_id = 'LASAIR5'
 conf = {
     'bootstrap.servers': kafka_server,
     'group.id': group_id,
